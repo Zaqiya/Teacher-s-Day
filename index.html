@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Happy Teacher’s Day — Geography Tribute</title>
+
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Three.js (for 3D globe + particles) -->
+    <script src="https://unpkg.com/three@0.161.0/build/three.min.js"></script>
+
+    <!-- Confetti (for Surprise button) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        :root {
+            --bg1: #e0f2fe;
+            /* sky-100 */
+            --bg2: #dcfce7;
+            /* green-100 */
+            --bg3: #f5f5f4;
+            /* stone-100 */
+            --accent: #0ea5e9;
+            /* sky-500 */
+            --accent-2: #10b981;
+            /* emerald-500 */
+            --text: #0f172a;
+            /*slate-900*/
+            --bg1: #fdf4ff;
+            /* pink-100 */
+            --bg2: #fef9c3;
+            /* yellow-100 */
+            --bg3: #e0f2fe;
+            /* sky-100 */
+            --accent: #f43f5e;
+            /* rose-500 */
+            --accent-2: #f97316;
+            /* orange-500 */
+            --text: #0f172a;
+            /* slate-900 */
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Soft gradient background with subtle parallax via background-position */
+        body {
+
+
+            margin: 0;
+            color: var(--text);
+            background: radial-gradient(1200px 800px at 20% 10%, rgba(244, 63, 94, 0.2), transparent 60%),
+                radial-gradient(1000px 700px at 80% 20%, rgba(249, 115, 22, 0.2), transparent 60%),
+                linear-gradient(180deg, var(--bg1), var(--bg2) 60%, var(--bg3));
+            background-attachment: fixed;
+            overflow-x: hidden;
+        }
+
+        /* Canvas full-bleed behind content */
+        #spaceCanvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Extra background elements */
+        .floating-shape {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0) translateX(0);
+            }
+
+            50% {
+                transform: translateY(-40px) translateX(30px);
+            }
+        }
+
+        /* Glass card */
+        .glass {
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 20px 40px rgba(2, 6, 23, 0.08);
+        }
+
+        /* Fancy button hover */
+        .btn-gradient {
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 24px rgba(2, 6, 23, .15);
+        }
+
+        /* Quote fade animation */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity .6s ease, transform .6s ease;
+        }
+
+        /* Sticky notes vibe */
+        .note {
+            transform: rotate(var(--r));
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .note:hover {
+            transform: rotate(var(--r)) translateY(-4px);
+            box-shadow: 0 18px 30px rgba(2, 6, 23, .12);
+        }
+
+        /* Neon photo frame (3D tilt) */
+        .photo-frame {
+            perspective: 1000px;
+        }
+
+        .photo-card {
+            transform-style: preserve-3d;
+            transition: transform .3s ease;
+        }
+
+        .photo-card:hover {
+            transform: rotateX(6deg) rotateY(-6deg);
+        }
+
+        .neon-border {
+            border-radius: 1.25rem;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, .75), 0 0 30px rgba(14, 165, 233, .35), inset 0 0 30px rgba(16, 185, 129, .25);
+        }
+
+        /* Utility for max-width readable text */
+        .content {
+            max-width: 1100px;
+        }
+
+        /* Ensure 3D scene doesn't sit under mobile browser bars */
+        @supports (height: 100svh) {
+            .min-h-svh {
+                min-height: 100svh;
+            }
+        }
+
+         /* === Curtains === */
+    #curtains {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .curtain {
+      width: 50%;
+      height: 100%;
+      background: linear-gradient(to bottom, #ffcce0, #ffb6d9);
+      position: relative;
+    }
+   
+      .open .left {
+      animation: slideLeft 2s forwards ease-in-out;
+    }
+
+    .open .right {
+      animation: slideRight 2s forwards ease-in-out;
+    }
+
+    @keyframes slideLeft {
+      to {
+        transform: translateX(-90%) rotateY(20deg);
+      }
+    }
+
+    @keyframes slideRight {
+      to {
+        transform: translateX(90%) rotateY(-20deg);
+      }
+    }
+
+    /* Flowers */
+    .flower {
+      position: fixed;
+      top: -50px;
+      font-size: 2rem;
+      animation: fall 5s linear forwards;
+      z-index: 40;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+    </style>
+</head>
+
+<body>
+ <!-- Curtains overlay -->
+  <div id="curtains">
+    <div class="curtain left">
+      <div class="belt"></div>
+    </div>
+    <div class="curtain right">
+      <div class="belt"></div>
+    </div>
+  </div>
+
+
+    <!-- Floating background shapes -->
+    <div class="floating-shape w-40 h-40 bg-pink-400 top-20 left-10"></div>
+    <div class="floating-shape w-28 h-28 bg-yellow-400 top-1/3 right-12" style="animation-delay: 3s"></div>
+    <div class="floating-shape w-32 h-32 bg-sky-400 bottom-20 left-1/4" style="animation-delay: 6s"></div>
+
+    <!-- Audio play -->
+    <audio id="bgMusic" src="Audio.mp3" preload="auto"></audio>
+
+    <!-- 3D Background Canvas (globe + particles + orbiting icons) -->
+    <canvas id="spaceCanvas"></canvas>
+
+    <!-- HERO / GREETING -->
+    <header class="min-h-svh flex items-center justify-center px-4">
+        <div class="content w-full mx-auto text-center">
+            <div class="glass rounded-2xl p-6 md:p-10">
+                <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight">
+                    Happy Teacher’s Day 💐
+                </h1>
+                <p class="mt-3 md:mt-4 text-base md:text-xl opacity-90">
+                    To our beloved <span class="font-semibold">Geography Teacher</span>, who makes us see the world 🌎
+                    differently.
+                </p>
+
+                <div class="mt-6 md:mt-8 flex items-center justify-center gap-3 flex-wrap">
+                    <a href="#quotes"
+                        class="px-5 py-3 rounded-xl border border-sky-500/60 hover:shadow-md transition text-sm md:text-base">Read
+                        Wishes</a>
+                    <button id="surpriseBtn"
+                        class="btn-gradient text-white px-5 py-3 rounded-xl text-sm md:text-base flex items-center gap-2">
+                        <span>Click for Surprise 🎉</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- QUOTES & MESSAGES -->
+    <section id="quotes" class="px-4 py-16 md:py-24">
+        <div class="content mx-auto">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <h2 class="text-2xl md:text-3xl font-bold">Words that travel the world</h2>
+                    <!-- <p class="mt-2 opacity-80 text-sm md:text-base">Rotating quotes about teachers and geography.</p> -->
+                    <div class="mt-6 min-h-[120px] md:min-h-[140px] flex items-center">
+                        <blockquote id="quoteBox" class="text-lg md:text-2xl font-medium"></blockquote>
+                    </div>
+                </div>
+                <div class="glass rounded-2xl p-6 md:p-8">
+                    <h3 class="text-xl md:text-2xl font-semibold">Respected Sir</h3>
+                    <!-- <ul class="mt-4 space-y-3 text-sm md:text-base">
+                        <li class="leading-relaxed">Explains complex maps like friendly stories.</li>
+                        <li class="leading-relaxed">Turns latitudes & longitudes into life lessons.</li>
+                        <li class="leading-relaxed">Believes curiosity is the best compass.</li>
+                    </ul> -->
+                    <blockquote class="italic text-lg md:text-xl leading-relaxed text-gray-800">
+                        “As an aspirant, I feel truly fortunate to learn Geography from you.
+                        You make every concept clear, every map meaningful, and every lesson inspiring.
+                        More than a teacher, you are a guide who has taught me to believe in myself and feel proud of my
+                        journey.
+                        Thank you for everything you have given us.”
+                    </blockquote>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GRATITUDE NOTES -->
+    <section id="notes" class="px-4 pb-16 md:pb-24">
+        <div class="content mx-auto">
+            <h2 class="text-2xl md:text-3xl font-bold mb-6">From Your Student, With Gratitude</h2>
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Example sticky notes (edit text as you like) -->
+                <div class="note glass p-4 rounded-xl" style="--r:-1.5deg; background: #fff8c5;">
+                    <p class="text-sm md:text-base">Thank you for making every class an adventure across the globe! 🌍
+                    </p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Ayaan</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:2deg; background:#e8fff1;">
+                    <p class="text-sm md:text-base">We are grateful for your knowledge and support 🙏</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Zoya</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:-2deg; background:#eef2ff;">
+                    <p class="text-sm md:text-base">You connect places with people & stories. Thank you! 📚</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Kabir</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:1.5deg; background:#fff1f2;">
+                    <p class="text-sm md:text-base">Because of you, contours and climate finally make sense. ⛰️</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Meera</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:-1deg; background:#f0f9ff;">
+                    <p class="text-sm md:text-base">Your energy is our north star. Keep inspiring us! ⭐</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Raj</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:1deg; background:#ecfccb;">
+                    <p class="text-sm md:text-base">Your guidance inspires us every day 🌍</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Sana</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:-1.2deg; background:#fef9c3;">
+                    <p class="text-sm md:text-base">Thank you for making Geography so interesting! ✨</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Arjun</span> -->
+                </div>
+                <div class="note glass p-4 rounded-xl" style="--r:2.2deg; background:#ffedd5;">
+                    <p class="text-sm md:text-base">Thanks for believing in us & our dreams. 🌟</p>
+                    <!-- <span class="block mt-3 text-xs opacity-60">— Aisha</span> -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <footer class="px-4 pb-10 text-center opacity-110 text-xs">
+        Made with respect and gratitude — By <b>Zaqiya Rais</b>
+        <br>Once Again Happy Teacher’s Day Sir!
+    </footer>
+
+    <script>
+
+
+         // Auto-open curtains after 1s
+    window.onload = () => {
+      setTimeout(() => {
+        const curtains = document.getElementById("curtains");
+        curtains.classList.add("open");
+
+        // After opening, tie with belts
+        setTimeout(() => {
+          document.querySelectorAll(".belt").forEach(belt => {
+            belt.style.display = "block";
+          });
+
+          // Release flowers 🌸
+          for (let i = 0; i < 30; i++) {
+            let flower = document.createElement("div");
+            flower.className = "flower";
+            flower.textContent = ["🌸", "🌺", "🌷", "💐"][Math.floor(Math.random() * 4)];
+            flower.style.left = Math.random() * 100 + "vw";
+            flower.style.animationDelay = (Math.random() * 3) + "s";
+            document.body.appendChild(flower);
+            flower.addEventListener("animationend", () => flower.remove());
+          }
+
+        }, 2000); // belts show after curtains slide
+      }, 1000);
+    };
+
+
+
+
+        // ====== QUOTES ROTATOR ======
+        const quotes = [
+            '“A teacher affects eternity; no one can tell where their influence stops.” — Henry Adams',
+            '“Geography is destiny — but a great teacher is the compass.”',
+            '“Education is the passport to the future.” — Malcolm X',
+            '“The world is a book, and those who do not travel read only one page.” — St. Augustine',
+            '“Maps are the language of curiosity.”',
+            '“Teachers open the door, but you must enter by yourself.” — Chinese Proverb'
+        ];
+        const quoteBox = document.getElementById('quoteBox');
+        let qi = 0;
+        function showQuote(i) {
+            const txt = quotes[i % quotes.length];
+            quoteBox.classList.remove('fade-enter-active');
+            quoteBox.classList.add('fade-enter');
+            requestAnimationFrame(() => {
+                quoteBox.textContent = txt;
+                quoteBox.classList.remove('fade-enter');
+                quoteBox.classList.add('fade-enter-active');
+            });
+        }
+        showQuote(qi++);
+        setInterval(() => showQuote(qi++), 3500);
+
+
+
+        // ====== SURPRISE BUTTON (CONFETTI + MUSIC) ======
+        const surpriseBtn = document.getElementById('surpriseBtn');
+        const bgMusic = document.getElementById('bgMusic');
+        let musicPlaying = false;
+
+        surpriseBtn.addEventListener('click', () => {
+            // Toggle music
+            if (!musicPlaying) {
+                bgMusic.play();
+                musicPlaying = true;
+            } else {
+                bgMusic.pause();
+                musicPlaying = false;
+            }
+
+            // Fire confetti bursts from both sides
+            const end = Date.now() + 800;
+            const colors = ['#0ea5e9', '#10b981', '#f59e0b', '#ef4444'];
+            (function frame() {
+                confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors });
+                confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors });
+                if (Date.now() < end) requestAnimationFrame(frame);
+            })();
+            // Center pop
+            confetti({ particleCount: 160, spread: 100, startVelocity: 35, origin: { y: 0.6 } });
+        });
+
+
+
+        // ====== OPTIONAL PHOTO UPLOAD ======
+        const photoInput = document.getElementById('photoInput');
+        const teacherImg = document.getElementById('teacherImg');
+        const removePhoto = document.getElementById('removePhoto');
+        teacherImg.alt = 'Upload a photo using the button on the right.';
+        removePhoto.addEventListener('click', () => { teacherImg.src = ''; });
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => { teacherImg.src = ev.target.result; };
+            reader.readAsDataURL(file);
+        });
+
+        // ====== THREE.JS SCENE (GLOBE + ORBITING ICONS + STARFIELD) ======
+        const canvas = document.getElementById('spaceCanvas');
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 2000);
+        camera.position.set(0, 0, 6);
+
+        // Lights
+        const ambient = new THREE.AmbientLight(0xffffff, 0.8);
+        const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+        dir.position.set(5, 3, 5);
+        scene.add(ambient, dir);
+
+        // Resize handler
+        function resize() {
+            const w = window.innerWidth; const h = window.innerHeight;
+            renderer.setSize(w, h);
+            renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+            camera.aspect = w / h; camera.updateProjectionMatrix();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Starfield (subtle background particles)
+        function makeStarfield(count = 2500, spread = 80) {
+            const geom = new THREE.BufferGeometry();
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count; i++) {
+                const r = spread * (Math.random() ** 0.5);
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const x = r * Math.sin(phi) * Math.cos(theta);
+                const y = r * Math.sin(phi) * Math.sin(theta);
+                const z = r * Math.cos(phi);
+                positions.set([x, y, z], i * 3);
+            }
+            geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const mat = new THREE.PointsMaterial({ size: 0.05, transparent: true, opacity: 0.7 });
+            const points = new THREE.Points(geom, mat);
+            points.renderOrder = -1;
+            return points;
+        }
+        const stars = makeStarfield();
+        scene.add(stars);
+
+        // Earth Textures (CORS-friendly from threejs.org examples)
+        const loader = new THREE.TextureLoader();
+        const earthTexURL = 'https://threejs.org/examples/textures/land_ocean_ice_cloud_2048.jpg';
+        const earthTexture = loader.load(earthTexURL);
+
+        // Earth Sphere
+        const earthGeo = new THREE.SphereGeometry(1.4, 64, 64);
+        const earthMat = new THREE.MeshStandardMaterial({ map: earthTexture, roughness: 0.9, metalness: 0.0 });
+        const earth = new THREE.Mesh(earthGeo, earthMat);
+        earth.position.set(0, 1.2, 0);
+        scene.add(earth);
+
+        // Helper: make emoji sprite as texture using a canvas
+        function makeEmojiSprite(emoji, size = 128) {
+            const cvs = document.createElement('canvas');
+            cvs.width = cvs.height = size;
+            const ctx = cvs.getContext('2d');
+            ctx.fillStyle = 'rgba(255,255,255,0)';
+            ctx.fillRect(0, 0, size, size);
+            ctx.font = `${Math.floor(size * 0.75)}px serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(emoji, size / 2, size / 2 + size * 0.06);
+            const tex = new THREE.CanvasTexture(cvs);
+            const mat = new THREE.SpriteMaterial({ map: tex, depthWrite: false });
+            const sprite = new THREE.Sprite(mat);
+            sprite.scale.set(0.6, 0.6, 0.6);
+            return sprite;
+        }
+
+        const icons = [
+            { emoji: '🧭', radius: 2.2, speed: 0.6, phase: 0.0, y: 1.5 },
+            { emoji: '🗺️', radius: 2.4, speed: -0.45, phase: 1.5, y: 0.6 },
+            { emoji: '⛰️', radius: 2.1, speed: 0.35, phase: 2.8, y: 1.0 },
+            { emoji: '📚', radius: 2.5, speed: -0.55, phase: 4.0, y: 2.0 },
+            { emoji: '🧭', radius: 2.0, speed: 0.5, phase: 2.2, y: 0.0 }
+        ].map(cfg => ({ ...cfg, sprite: makeEmojiSprite(cfg.emoji) }));
+        icons.forEach(o => scene.add(o.sprite));
+
+        // Parallax on scroll (subtle camera Z + star rotation)
+        window.addEventListener('scroll', () => {
+            const t = Math.min(1, window.scrollY / window.innerHeight);
+            camera.position.z = 6 - t * 0.8;
+            stars.rotation.y = t * 0.3;
+        });
+
+        // Animation loop
+        const clock = new THREE.Clock();
+        function animate() {
+            const t = clock.getElapsedTime();
+            requestAnimationFrame(animate);
+
+            earth.rotation.y += 0.0018; // Smooth rotation
+            stars.rotation.z += 0.0005;
+
+            // Orbiting icons
+            icons.forEach(o => {
+                const a = t * o.speed + o.phase;
+                o.sprite.position.set(Math.cos(a) * o.radius, o.y + Math.sin(a * 0.7) * 0.15, Math.sin(a) * o.radius);
+                // Always face camera
+                o.sprite.lookAt(camera.position);
+            });
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Improve text contrast depending on background brightness
+        function adjustBodyBgParallax() {
+            const y = window.scrollY || 0;
+            document.body.style.backgroundPosition = `0px ${-y * 0.05}px, 0px ${-y * 0.03}px, 0 0`;
+        }
+        window.addEventListener('scroll', adjustBodyBgParallax, { passive: true });
+        adjustBodyBgParallax();
+    </script>
+</body>
+
+</html>
